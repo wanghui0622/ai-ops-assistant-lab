@@ -1,0 +1,7 @@
+# AI 运营助手 MVP — Python 3.10+ 推荐（当前环境若为 3.9 亦可运行）
+camel-ai>=0.2.0
+python-dotenv>=1.0.1
+pydantic>=2.0.0
+
+# 可选：接入官方 OWL 示例中的 Workforce 动态编排（体积较大，按需取消注释）
+# git+https://github.com/camel-ai/owl.git

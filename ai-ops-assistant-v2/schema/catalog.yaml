@@ -1,0 +1,49 @@
+# OLAP 语义目录：与 Doris 表对齐，供 SchemaRetriever / SQL Agent 增强
+
+tables:
+  game_daily_metrics:
+    description: 游戏核心日粒度指标表，按 dt 分区
+    partition_by: dt
+    bucket_keys: [dt]
+    columns:
+      dt:
+        type: DATE
+        description: 统计日（分区键，查询务必带范围过滤）
+      dau:
+        type: BIGINT
+        description: 当日活跃用户数
+      new_users:
+        type: BIGINT
+        description: 当日新增账号数
+      retention_d1_pct:
+        type: DOUBLE
+        description: 次日留存率百分比
+      churn_users_7d_window:
+        type: BIGINT
+        description: 滚动 7 日流失窗口内用户数（业务口径见 metrics）
+
+  order_daily_summary:
+    description: 商城订单按日汇总
+    partition_by: dt
+    columns:
+      dt:
+        type: DATE
+        description: 订单统计日
+      orders:
+        type: BIGINT
+        description: 订单笔数
+      gmv_cny:
+        type: DOUBLE
+        description: 成交金额（人民币）
+
+metrics:
+  dau:
+    definition: 当日至少登录一次的去重用户数
+    formula: COUNT(DISTINCT user_id) per day  # 逻辑说明，非物理列
+    primary_table: game_daily_metrics
+  churn_users_7d_window:
+    definition: 过去 7 自然日内未再登录的用户数（业务定义以数仓口径为准）
+    primary_table: game_daily_metrics
+  gmv_cny:
+    definition: 当日商城 GMV（含税与否以业务配置为准）
+    primary_table: order_daily_summary

@@ -1,0 +1,6 @@
+# AI 运营助手 V3 — 语义层 + 指标体系
+camel-ai>=0.2.0
+python-dotenv>=1.0.1
+pydantic>=2.0.0
+PyYAML>=6.0.1
+pymysql>=1.1.0

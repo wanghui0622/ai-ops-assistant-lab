@@ -1,0 +1,39 @@
+# 指标注册表：SQL 仅允许由 sql_compiler 使用此处模板拼装，不从 LLM 直接落 SQL
+
+metrics:
+  active_user:
+    name: active_user
+    description: 日活跃用户数（DAU），统计日去重登录用户规模
+    # Doris 表达式片段：与 source_table 列/可计算字段对应
+    sql_template: "dau"
+    dimensions:
+      - dt
+    source_table: game_daily_metrics
+    grain: day
+
+  paying_user:
+    name: paying_user
+    description: 付费相关强度代理指标（演示：日订单笔数作付费活跃代理）
+    sql_template: "orders"
+    dimensions:
+      - dt
+    source_table: order_daily_summary
+    grain: day
+
+  order_amount:
+    name: order_amount
+    description: 订单金额（GMV，人民币）
+    sql_template: "gmv_cny"
+    dimensions:
+      - dt
+    source_table: order_daily_summary
+    grain: day
+
+  retention_rate:
+    name: retention_rate
+    description: 次日留存率（百分比）
+    sql_template: "retention_d1_pct"
+    dimensions:
+      - dt
+    source_table: game_daily_metrics
+    grain: day
