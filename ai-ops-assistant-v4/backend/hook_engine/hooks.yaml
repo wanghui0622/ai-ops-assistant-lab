@@ -1,0 +1,20 @@
+version: 1
+hooks:
+  lifecycle:
+    - event: session_start
+      handler: audit.log_session_start
+    - event: skill_start
+      handler: [audit.log_skill, dispatcher.broadcast_sse]
+    - event: skill_complete
+      handler: [audit.log_skill, dispatcher.broadcast_sse]
+    - event: hitl_pause
+      handler: [dispatcher.broadcast_sse, audit.log_hitl]
+  pre_post:
+    - event: pre_skill_execute
+      matcher: { skill: compile-and-query }
+    - event: post_skill_execute
+      matcher: { skill: compile-and-query }
+  audit:
+    sink: file
+    path: logs/audit.jsonl
+    include_payload: true

@@ -1,0 +1,10 @@
+name: generate-report
+version: "1"
+steps:
+  - id: report
+    script: scripts/run.py
+    fn: generate
+    model: true
+outputs:
+  - markdown_report
+  - report

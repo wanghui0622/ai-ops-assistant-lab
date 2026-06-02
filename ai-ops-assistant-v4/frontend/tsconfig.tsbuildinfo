@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/actionbuttons.tsx","./src/components/chatpanel.tsx","./src/components/metriceditor.tsx","./src/components/reasoningpanel.tsx","./src/components/reportcharts.tsx","./src/components/reportpanel.tsx","./src/hooks/usesession.ts","./src/types/session.ts"],"version":"5.9.3"}

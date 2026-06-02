@@ -1,0 +1,9 @@
+name: analyze-insight
+version: "1"
+steps:
+  - id: analyze
+    script: scripts/run.py
+    fn: analyze
+    model: true
+outputs:
+  - insight

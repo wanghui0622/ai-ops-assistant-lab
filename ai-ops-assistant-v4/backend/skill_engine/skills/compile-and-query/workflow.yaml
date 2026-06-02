@@ -1,0 +1,16 @@
+name: compile-and-query
+version: "1"
+steps:
+  - id: plan
+    script: scripts/run.py
+    fn: plan_query
+  - id: compile
+    script: scripts/run.py
+    fn: compile_sql
+  - id: execute
+    script: scripts/run.py
+    fn: execute_query
+outputs:
+  - query_plan
+  - sql_compiler
+  - query_execution

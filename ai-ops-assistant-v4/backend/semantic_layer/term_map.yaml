@@ -1,0 +1,29 @@
+# 业务用语 → 候选指标 ID（可多对一；Metric Agent 再结合意图消歧）
+
+terms:
+  活跃:
+    metrics: [active_user]
+  DAU:
+    metrics: [active_user]
+  日活:
+    metrics: [active_user]
+
+  付费:
+    metrics: [paying_user, order_amount]
+  充值:
+    metrics: [order_amount]
+  GMV:
+    metrics: [order_amount]
+  订单额:
+    metrics: [order_amount]
+
+  留存:
+    metrics: [retention_rate]
+  次留:
+    metrics: [retention_rate]
+
+  流失:
+    metrics: [active_user, retention_rate]
+
+  收入:
+    metrics: [order_amount]

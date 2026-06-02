@@ -1,0 +1,12 @@
+name: select-metrics
+version: "1"
+steps:
+  - id: load_registry
+    script: scripts/run.py
+    fn: load_registry
+  - id: select
+    script: scripts/run.py
+    fn: select_metrics
+    model: true
+outputs:
+  - metric_bundle

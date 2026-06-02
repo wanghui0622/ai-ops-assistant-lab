@@ -1,0 +1,17 @@
+name: ops-analysis
+skill_sequence:
+  - understand-intent
+  - select-metrics
+  - compile-and-query
+hitl_gates:
+  - after_skill: compile-and-query
+    phase: awaiting_metric_review
+    prompt: "指标与 SQL 如下，是否继续？如需调整请选择「修改指标」。"
+    actions: [confirm_metrics, edit_metrics, cancel]
+  - before_skill: generate-report
+    phase: awaiting_report_confirm
+    prompt: "是否生成分析报告？"
+    actions: [confirm_report, cancel]
+post_hitl_skills:
+  - analyze-insight
+  - generate-report

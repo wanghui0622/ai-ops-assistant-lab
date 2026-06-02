@@ -1,0 +1,10 @@
+name: understand-intent
+version: "1"
+steps:
+  - id: parse_intent
+    script: scripts/run.py
+    fn: parse_intent
+    model: true
+outputs:
+  - understanding
+  - raw_question
