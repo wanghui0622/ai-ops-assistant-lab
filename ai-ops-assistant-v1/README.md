@@ -35,6 +35,10 @@ Report Agent ──► Markdown 分析报告
 | 数据 | `tools/doris_client.py`（未配置 Doris 时走 Mock） |
 | 配置 | `pydantic` + `python-dotenv` |
 
+## 学习指引
+
+自学路线与代码内 `【学习】` 注释见仓库根目录 [`LEARNING.md`](../LEARNING.md)。建议从 `main.py` → `workflow/ops_workflow.py` → `agents/_camel_runtime.py` 读起。
+
 ## 快速启动
 
 ```bash

@@ -1,6 +1,15 @@
-"""OWL Workflow V2：多阶段、状态传递、StageCache。
+"""
+OWL Workflow V2：多阶段、状态传递、StageCache。
 
-说明：可与 camel-ai/owl 的 Workforce 组合；此处为生产可控的确定性 DAG + 缓存层。
+【学习】相对 V1 的变化：
+  1. SQL 拆为 Planner → Optimizer → Execution（三个 Agent）
+  2. SchemaRetriever 从 catalog.yaml 注入表结构，约束 LLM
+  3. OpsWorkflowState 集中保存各阶段产物；StageCache.memo 可缓存 intent/sql_plan 等
+
+【学习】阅读顺序：本文件 → workflow/state.py → tools/schema_retriever.py
+       → agents/sql_planner_agent.py
+
+可与 camel-ai/owl 的 Workforce 组合；此处为确定性 DAG + 缓存层。
 """
 
 from __future__ import annotations
@@ -49,7 +58,7 @@ class OWLWorkflow:
         task = Task(content=state.user_question)
         task.set_state(TaskState.RUNNING)
 
-        # -------- Intent --------
+        # -------- Intent（理解问题；缓存键仅含 question）--------
         intent, hit_i = self.cache.memo(
             "intent",
             {"question": state.user_question},
@@ -58,11 +67,12 @@ class OWLWorkflow:
         state.intent = intent
         state.cache_hits["intent"] = hit_i
 
+        # 【学习】Schema 不进缓存键的独立阶段：由 intent 推断表名再拼 Prompt 文本
         tables = infer_tables_from_intent(intent)
         state.candidate_tables = tables
         state.schema_context = self.schema_retriever.build_prompt_context(tables)
 
-        # -------- SQL Plan --------
+        # -------- SQL Plan（逻辑计划，尚未是终稿 SQL）--------
         plan, hit_p = self.cache.memo(
             "sql_plan",
             {

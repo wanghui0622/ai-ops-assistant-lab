@@ -1,3 +1,12 @@
+"""
+Skill 执行器：按 workflow.yaml 的步骤动态加载 scripts/run.py。
+
+【学习】Python importlib.util.spec_from_file_location：
+  不把 Skill 安装成 pip 包，也能按路径加载模块并调用指定函数（如 run）。
+
+【学习】步骤输出 step_outputs 逐步 merge 到 ctx.data，供后续步骤与 Runtime 使用。
+"""
+
 from __future__ import annotations
 import importlib.util
 import sys
@@ -10,6 +19,7 @@ class SkillExecutor:
     def __init__(self, hook_dispatcher=None) -> None:
         self.hook_dispatcher = hook_dispatcher
     async def execute(self, skill: SkillDefinition, ctx: SkillContext) -> SkillResult:
+        """执行单个 Skill：遍历 workflow.steps，每步调用 script 中的 fn(ctx, inp)。"""
         from hook_engine.events import HookEvent
         if self.hook_dispatcher:
             await self.hook_dispatcher.emit(HookEvent(type="skill_start", session_id=ctx.session_id, skill_name=skill.name, summary=f"开始执行 Skill: {skill.name}"))
@@ -44,6 +54,7 @@ class SkillExecutor:
                     if isinstance(v, dict) and k in v: out[k] = v[k]
         return out
     def _load_fn(self, skill_dir: Path, script_rel: str, fn_name: str) -> Callable:
+        """从 Skill 目录加载 Python 脚本并返回可调用函数（约定签名 fn(ctx, inp) -> dict）。"""
         script_path = skill_dir / script_rel
         mod_name = f"skill_{skill_dir.name}_{fn_name}"
         spec = importlib.util.spec_from_file_location(mod_name, script_path)

@@ -1,4 +1,13 @@
-"""SQL Compiler：仅将 QueryPlan 编译为 Doris SQL（禁止由 LLM 直接写 SQL）。"""
+"""
+SQL Compiler：仅将 QueryPlan 编译为 Doris SQL（禁止由 LLM 直接写 SQL）。
+
+【学习】对应 LEARNING.md 阶段 4，V3 架构核心：
+  - LLM 只产出 query_plan（表、维度、指标 ID、天数）
+  - 指标表达式来自 metrics/registry.yaml 的 sql_template
+  - 本模块用字符串拼装 SELECT ... WHERE dt >= DATE_SUB(...) 保证可审计
+
+【学习】安全：_safe_ident / _safe_sql_expression 防止注入式片段进入 SQL。
+"""
 
 from __future__ import annotations
 
@@ -10,7 +19,11 @@ _IDENTIFIER = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 
 def compile_query_plan(plan: Dict[str, Any]) -> Dict[str, Any]:
-    """将 QueryPlan 编译为唯一可执行 SQL。"""
+    """
+    将 Semantic Planner 的 QueryPlan 编译为唯一可执行 SQL。
+
+    输入 plan 关键字段：source_table, dimensions, resolved_metrics, time_range_days
+    """
     if not plan.get("ok"):
         return {
             "ok": False,

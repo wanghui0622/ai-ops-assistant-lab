@@ -1,4 +1,12 @@
-"""SQL Generation Agent：意图 → Doris SQL + mock 执行计划。"""
+"""
+SQL Generation Agent：意图 → Doris SQL + mock 执行计划。
+
+【学习】V1 的 Text-to-SQL：LLM（或 Mock）同时产出：
+  - sql：给人看的 SQL 字符串
+  - mock_plan：给 DorisClient 的路由键（op + days），因 Mock 不真解析 SQL
+
+【学习】V3 对比：终稿 SQL 由 sql_compiler 拼装，本 Agent 在 V3 中被 Metric+Compiler 替代。
+"""
 
 from __future__ import annotations
 
@@ -42,6 +50,13 @@ def _normalize_sql(data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _mock_sql(understanding: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    根据 intent 选择表与 mock_plan.op。
+
+    【学习】mock_plan 约定见 tools/doris_client.fetch_by_plan：
+      - game_daily_metrics_range → mock_data/game_data
+      - order_daily_summary_range → mock_data/order_data
+    """
     intent = understanding.get("intent", "")
     days = int(understanding.get("time_range_days", 7))
     if intent == "revenue_analysis":

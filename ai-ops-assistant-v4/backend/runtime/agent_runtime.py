@@ -1,3 +1,15 @@
+"""
+Agent Runtime：会话、Workflow YAML 驱动、Skill 链与 HITL 闸门。
+
+【学习】对应 LEARNING.md 阶段 5。V4 用 Skill 替代 V1 的 Camel ChatAgent 流水线：
+  - workflow YAML 的 skill_sequence 定义阶段顺序
+  - hitl_gates 在指定 Skill 后暂停，等待用户 confirm_metrics / edit_metrics 等
+  - HookDispatcher 向 SSE 推送 pre_skill / post_skill 事件（右侧时间线）
+
+【学习】async/await：FastAPI 路由 await runtime.handle_message，避免阻塞事件循环。
+【学习】阅读顺序：runtime/ops-analysis.yaml → skill_engine/skills/*/workflow.yaml → 本文件
+"""
+
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
 import yaml
@@ -12,6 +24,8 @@ from skill_engine.registry import SkillRegistry
 from skill_engine.types import SkillContext
 
 class AgentRuntime:
+    """编排核心：SessionManager 存状态，SkillExecutor 跑脚本，ModelAdapter 调 LLM。"""
+
     def __init__(self, settings: Optional[Settings] = None, hook_dispatcher: Optional[HookDispatcher] = None, session_manager: Optional[SessionManager] = None) -> None:
         self.settings = settings or get_settings()
         self.hooks = hook_dispatcher or HookDispatcher()
@@ -24,7 +38,9 @@ class AgentRuntime:
         await self.hooks.emit(HookEvent(type="session_start", session_id=s.session_id, summary="会话已创建"))
         return s
     async def handle_message(self, session_id: str, text: str) -> SessionState:
+        """用户发送自然语言问题：按 workflow 顺序执行 Skill，遇 HITL 闸门则暂停。"""
         session = self._require(session_id)
+        # 【学习】HITL 等待确认时，普通聊天不会推进流程，引导用户点 UI 按钮
         if session.phase in (SessionPhase.AWAITING_METRIC_REVIEW, SessionPhase.AWAITING_REPORT_CONFIRM):
             session.messages.append(ChatMessage(role="user", content=text))
             session.messages.append(ChatMessage(role="assistant", content="请先使用下方按钮确认或修改，再继续对话。"))
@@ -40,6 +56,7 @@ class AgentRuntime:
         for i, skill_name in enumerate(skills):
             session.skill_index = i
             await self._run_skill(session, skill_name)
+            # 【学习】_gate_after 读 workflow YAML 的 hitl_gates.after_skill
             gate = self._gate_after(wf, skill_name)
             if gate:
                 return await self._pause_hitl(session, gate)
